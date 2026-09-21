@@ -10,7 +10,7 @@
       "lift": {
         "ex": {
           "Bench press": {
-            "done": true,
+            "done": false,
             "sets": "",
             "reps": "",
             "weight": ""
@@ -42,64 +42,11 @@
         },
         "extra": []
       },
-      "foodLog": [
-        {
-          "id": "sso0pie",
-          "slot": "pre",
-          "name": "Boiled egg",
-          "unit": "1 egg",
-          "qty": 1,
-          "kcal": 70,
-          "pro": 6,
-          "carbs": 0.6,
-          "fat": 5
-        },
-        {
-          "id": "ngos0zz",
-          "slot": "pre",
-          "name": "Boiled egg",
-          "unit": "1 egg",
-          "qty": 1,
-          "kcal": 70,
-          "pro": 6,
-          "carbs": 0.6,
-          "fat": 5
-        },
-        {
-          "id": "w4o6vfb",
-          "slot": "pre",
-          "name": "Boiled egg",
-          "unit": "1 egg",
-          "qty": 1,
-          "kcal": 70,
-          "pro": 6,
-          "carbs": 0.6,
-          "fat": 5
-        },
-        {
-          "id": "utpy8gb",
-          "slot": "pre",
-          "name": "Boiled egg",
-          "unit": "1 egg",
-          "qty": 1,
-          "kcal": 70,
-          "pro": 6,
-          "carbs": 0.6,
-          "fat": 5
-        }
-      ],
-      "water": 500
+      "foodLog": [],
+      "water": 0
     }
   },
-  "checkins": {
-    "2026-09-21": {
-      "jointPain": 0,
-      "sleep": 3,
-      "appetite": 3,
-      "rhr": null,
-      "date": "2026-09-21"
-    }
-  },
+  "checkins": {},
   "prep": {},
   "weights": {},
   "settings": {
@@ -110,7 +57,7 @@
       "fat": 75,
       "water": 3500
     },
-    "theme": "light",
+    "theme": "auto",
     "exercises": {
       "push": [
         "Bench press",
