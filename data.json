@@ -165,6 +165,17 @@
           "pro": 8,
           "carbs": 15,
           "fat": 2
+        },
+        {
+          "id": "5h6uzlk",
+          "slot": "post",
+          "name": "Black coffee",
+          "unit": "1 cup",
+          "qty": 1,
+          "kcal": 2,
+          "pro": 0.3,
+          "carbs": 0,
+          "fat": 0
         }
       ],
       "water": 0
