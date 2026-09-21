@@ -66,7 +66,19 @@
         },
         "extra": []
       },
-      "foodLog": [],
+      "foodLog": [
+        {
+          "id": "w6qg1jd",
+          "slot": "pre",
+          "name": "Oats (dry bowl)",
+          "unit": "~40g bowl",
+          "qty": 2.5,
+          "kcal": 375,
+          "pro": 12.5,
+          "carbs": 67.5,
+          "fat": 7.5
+        }
+      ],
       "water": 0
     }
   },
