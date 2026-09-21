@@ -183,7 +183,9 @@
   },
   "checkins": {},
   "prep": {},
-  "weights": {},
+  "weights": {
+    "2026-09-21": 71
+  },
   "settings": {
     "targets": {
       "kcal": 2700,
