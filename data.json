@@ -66,7 +66,30 @@
         },
         "extra": []
       },
-      "foodLog": [],
+      "foodLog": [
+        {
+          "id": "19c6p4c",
+          "slot": "pre",
+          "name": "Boiled egg",
+          "unit": "1 egg",
+          "qty": 1,
+          "kcal": 70,
+          "pro": 6,
+          "carbs": 0.6,
+          "fat": 5
+        },
+        {
+          "id": "fvlli8w",
+          "slot": "pre",
+          "name": "Boiled egg",
+          "unit": "1 egg",
+          "qty": 1,
+          "kcal": 70,
+          "pro": 6,
+          "carbs": 0.6,
+          "fat": 5
+        }
+      ],
       "water": 0
     }
   },
