@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Logbook — Run + PPL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEEBE4; --bg-raised: #F7F5F0; --ink: #1C1A17; --ink-dim: #6B655C;
+    --line: #D8D2C6; --accent: #B8791E; --accent-ink: #FFFFFF;
+    --good: #4B6B4F; --warn: #A8432E; --rest: #8C8375;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#171613; --bg-raised:#1F1D19; --ink:#EDE9E1; --ink-dim:#9B9488;
+      --line:#35322C; --accent:#D89A3E; --accent-ink:#171613; --good:#7FA484; --warn:#D97A66; --rest:#6E685D;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#171613; --bg-raised:#1F1D19; --ink:#EDE9E1; --ink-dim:#9B9488;
+    --line:#35322C; --accent:#D89A3E; --accent-ink:#171613; --good:#7FA484; --warn:#D97A66; --rest:#6E685D;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:'IBM Plex Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; min-height:100%; }
+  .mono { font-family:'IBM Plex Mono', ui-monospace, monospace; }
+  .wrap { max-width:640px; margin:0 auto; padding:0 16px 96px; }
+
+  header.top { position:sticky; top:0; z-index:10; padding-top:env(safe-area-inset-top,0px); background:var(--bg); border-bottom:1px solid var(--line); }
+  .top-inner { max-width:640px; margin:0 auto; padding:14px 16px 10px; display:flex; align-items:baseline; justify-content:space-between; }
+  .date-line { font-size:13px; color:var(--ink-dim); display:flex; align-items:center; gap:8px; }
+  .date-line .mono { color:var(--ink); font-weight:500; }
+  .syncdot { width:8px; height:8px; border-radius:50%; background:var(--rest); display:inline-block; }
+  .syncdot.synced { background:var(--good); } .syncdot.syncing { background:var(--accent); } .syncdot.error { background:var(--warn); }
+  .daytype { font-size:22px; font-weight:600; letter-spacing:-0.01em; margin-top:2px; }
+  .daytype .tag { font-size:13px; font-weight:400; color:var(--ink-dim); margin-left:8px; }
+  .streak { text-align:right; }
+  .streak .n { font-size:22px; font-weight:600; font-family:'IBM Plex Mono'; }
+  .streak .l { font-size:11px; color:var(--ink-dim); }
+
+  nav.tabs { display:flex; gap:2px; margin:14px 0 18px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--bg-raised); }
+  nav.tabs button { flex:1; padding:9px 4px; font-size:12px; font-family:inherit; font-weight:500; background:none; border:none; color:var(--ink-dim); cursor:pointer; }
+  nav.tabs button.active { background:var(--ink); color:var(--bg); }
+
+  section.panel { display:none; } section.panel.active { display:block; }
+  .card { background:var(--bg-raised); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; }
+  .card h3 { margin:0 0 12px; font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+  .card h3 .sub { font-size:12px; color:var(--ink-dim); font-weight:400; }
+
+  .row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .row:last-child { border-bottom:none; }
+  .row label { flex:1; font-size:14px; }
+  .row .meta { font-size:12px; color:var(--ink-dim); font-family:'IBM Plex Mono'; }
+
+  input[type="checkbox"] { width:20px; height:20px; accent-color:var(--accent); flex-shrink:0; }
+  input[type="number"], input[type="text"], input[type="password"], select {
+    font-family:'IBM Plex Mono'; font-size:13px; background:var(--bg); border:1px solid var(--line);
+    border-radius:6px; color:var(--ink); padding:6px 8px;
+  }
+  input[type="number"] { width:56px; }
+  select { width:auto; font-family:'IBM Plex Sans'; }
+  input:focus, select:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+
+  .exrow { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .exrow:last-child { border-bottom:none; }
+  .exrow .name { flex:1 1 100%; font-size:14px; margin-bottom:2px; display:flex; justify-content:space-between; }
+  .exrow .fields { display:flex; gap:6px; align-items:center; font-size:12px; color:var(--ink-dim); }
+  .exrow .fields span { font-size:11px; }
+  .rmbtn { background:none; border:none; color:var(--ink-dim); cursor:pointer; font-size:15px; padding:0 4px; }
+
+  .progress { height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin-top:6px; }
+  .progress > div { height:100%; background:var(--accent); transition:width .25s ease; }
+
+  .macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+  .macro-grid .m { text-align:center; }
+  .macro-grid .m .v { font-family:'IBM Plex Mono'; font-size:16px; font-weight:600; }
+  .macro-grid .m .t { font-size:10px; color:var(--ink-dim); }
+
+  .waterbtns { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .waterbtns button, .chip { font-family:'IBM Plex Mono'; font-size:12px; padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); cursor:pointer; }
+  .waterbtns button.reset { color:var(--warn); border-color:var(--warn); }
+
+  button.primary { width:100%; padding:12px; font-size:14px; font-weight:600; background:var(--accent); color:var(--accent-ink); border:none; border-radius:8px; cursor:pointer; font-family:inherit; margin-top:4px; }
+  button.ghost { padding:8px 12px; font-size:12px; background:none; color:var(--ink-dim); border:1px solid var(--line); border-radius:6px; cursor:pointer; font-family:inherit; }
+
+  .flag { display:flex; gap:8px; align-items:flex-start; padding:12px; border-radius:8px; background:color-mix(in srgb, var(--warn) 14%, var(--bg-raised)); border:1px solid var(--warn); font-size:13px; margin-bottom:14px; }
+  .flag .dot { width:8px; height:8px; border-radius:50%; background:var(--warn); margin-top:5px; flex-shrink:0; }
+
+  table.week { width:100%; border-collapse:collapse; font-size:11px; }
+  table.week th, table.week td { padding:6px 3px; text-align:center; border-bottom:1px solid var(--line); }
+  table.week th { color:var(--ink-dim); font-weight:500; text-align:left; }
+  table.week td:first-child, table.week th:first-child { text-align:left; }
+  .dot-b { display:inline-block; width:9px; height:9px; border-radius:50%; }
+  .dot-b.on { background:var(--good); } .dot-b.off { background:var(--line); }
+
+  .checkin-item { margin-bottom:16px; }
+  .checkin-item .lbl { font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; }
+  .checkin-item .lbl .val { font-family:'IBM Plex Mono'; color:var(--accent); }
+  input[type="range"] { width:100%; accent-color:var(--accent); }
+
+  .prep-item { display:flex; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--line); }
+  .prep-item:last-child { border-bottom:none; }
+  .prep-item.done label { color:var(--ink-dim); text-decoration:line-through; }
+
+  .note { font-size:12px; color:var(--ink-dim); line-height:1.5; margin-top:4px; }
+  .settings-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px; gap:8px; }
+  .settings-row:last-child { border-bottom:none; }
+  .settings-row input[type="text"], .settings-row input[type="password"] { width:100%; max-width:220px; }
+
+  .foodline { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .foodline:last-child { border-bottom:none; }
+  .foodline .meta { font-size:11px; color:var(--ink-dim); font-family:'IBM Plex Mono'; }
+  .slot-label { font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.03em; margin:12px 0 4px; }
+  .slot-label:first-child { margin-top:0; }
+  .addfood-grid { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .addfood-grid select { flex:1 1 120px; }
+  .addfood-grid input[type=number] { width:50px; }
+  .customfood { display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+  .customfood.open { display:block; }
+  .customfood .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }
+  .customfood input { width:100%; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="top-inner">
+      <div>
+        <div class="date-line"><span class="syncdot" id="syncDot"></span><span class="mono" id="dateStr"></span></div>
+        <div class="daytype" id="dayTypeLabel">—<span class="tag" id="dayTypeTag"></span></div>
+      </div>
+      <div class="streak"><div class="n mono" id="streakNum">0</div><div class="l">day streak</div></div>
+    </div>
+  </header>
+
+  <div style="padding-top:14px">
+    <nav class="tabs">
+      <button data-tab="today" class="active">Today</button>
+      <button data-tab="week">Week</button>
+      <button data-tab="checkin">Check-in</button>
+      <button data-tab="prep">Prep</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+
+    <section class="panel active" id="panel-today">
+      <div id="restNotice" style="display:none" class="flag"><div class="dot"></div><div>Rest day. No run, no lifting — this is batch-prep day. See the Prep tab.</div></div>
+
+      <div class="card" id="runCard">
+        <h3>Run <span class="sub" id="runPaceNote"></span></h3>
+        <div class="row"><input type="checkbox" id="runDone"><label for="runDone">Completed</label><input type="number" id="runDist" step="0.1" value="5"> <span class="meta">km</span></div>
+        <div class="row"><label for="runTime">Time</label><input type="number" id="runTime" placeholder="min"> <span class="meta">min</span></div>
+      </div>
+
+      <div class="card" id="liftCard">
+        <h3>Lift <span class="sub" id="liftSub"></span></h3>
+        <div id="exerciseList"></div>
+        <div id="extraExList"></div>
+        <div class="addfood-grid" style="margin-top:10px">
+          <input type="text" id="newExName" placeholder="Add an exercise…" style="flex:1">
+          <button class="ghost" id="addExBtn">Add</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Log food <span class="sub">dynamic macros</span></h3>
+        <div class="addfood-grid">
+          <select id="foodSlot">
+            <option value="pre">Pre-workout</option>
+            <option value="post">Post-workout</option>
+            <option value="lunch">Lunch</option>
+            <option value="snack">Snack</option>
+            <option value="dinner">Dinner</option>
+            <option value="other">Other</option>
+          </select>
+          <select id="foodSelect"></select>
+          <input type="number" id="foodQty" value="1" step="0.5" min="0">
+          <button class="ghost" id="addFoodBtn">Add</button>
+        </div>
+        <div class="waterbtns" id="quickChips"></div>
+        <button class="ghost" id="toggleCustomFood" style="margin-top:8px">+ define a new food</button>
+        <div class="customfood" id="customFoodForm">
+          <input type="text" id="cfName" placeholder="Food name">
+          <div class="grid2">
+            <input type="text" id="cfUnit" placeholder="Unit (e.g. 1 roti, 100g)">
+            <input type="number" id="cfKcal" placeholder="kcal / unit">
+            <input type="number" id="cfPro" placeholder="protein g / unit">
+            <input type="number" id="cfCarbs" placeholder="carbs g / unit">
+            <input type="number" id="cfFat" placeholder="fat g / unit">
+          </div>
+          <button class="ghost" id="saveCustomFood">Save food</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Today's meals</h3>
+        <div id="foodLogList"></div>
+        <div class="macro-grid">
+          <div class="m"><div class="v" id="kcalVal">0</div><div class="t">kcal /<span id="kcalTarget"></span></div></div>
+          <div class="m"><div class="v" id="proVal">0</div><div class="t">protein /<span id="proTarget"></span>g</div></div>
+          <div class="m"><div class="v" id="carbVal">0</div><div class="t">carbs /<span id="carbTarget"></span>g</div></div>
+          <div class="m"><div class="v" id="fatVal">0</div><div class="t">fat /<span id="fatTarget"></span>g</div></div>
+        </div>
+        <div class="progress"><div id="kcalBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="card">
+        <h3>Water <span class="sub" id="waterVal">0 / 3500 ml</span></h3>
+        <div class="progress"><div id="waterBar" style="width:0%"></div></div>
+        <div class="waterbtns">
+          <button data-w="250">+250 ml</button>
+          <button data-w="500">+500 ml</button>
+          <button data-w="700">+700 ml buttermilk</button>
+          <button class="reset" data-w="reset">reset</button>
+        </div>
+        <div class="note">Hyderabad heat + training load — add a pinch of salt/electrolyte to one bottle.</div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-week">
+      <div class="card"><h3>Last 7 days</h3><table class="week" id="weekTable"></table></div>
+      <div class="card">
+        <h3>Weight trend</h3>
+        <div class="row"><label for="bwInput">Today's weight</label><input type="number" step="0.1" id="bwInput" placeholder="kg"> <span class="meta">kg</span></div>
+        <div class="note" id="bwTrend"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-checkin">
+      <div id="checkinFlag"></div>
+      <div class="card">
+        <h3>Sunday check-in <span class="sub">joints, recovery, appetite</span></h3>
+        <div class="checkin-item"><div class="lbl"><span>Joint pain (knees / lower back / elbows)</span><span class="val" id="jpVal">0</span></div><input type="range" id="jointPain" min="0" max="10" value="0"></div>
+        <div class="checkin-item"><div class="lbl"><span>Resting heart rate</span><span class="val"><input type="number" id="rhrInput" style="width:48px" placeholder="bpm"></span></div></div>
+        <div class="checkin-item"><div class="lbl"><span>Sleep quality</span><span class="val" id="sleepVal">3</span></div><input type="range" id="sleepQ" min="1" max="5" value="3"></div>
+        <div class="checkin-item"><div class="lbl"><span>Appetite</span><span class="val" id="appVal">3</span></div><input type="range" id="appetite" min="1" max="5" value="3"></div>
+        <button class="primary" id="saveCheckin">Save check-in</button>
+        <div class="note">Rule: if joint pain ≥6, RHR trending up, or sleep/appetite drop for 2 Sundays running — drop a run to a walk. Keep lifting.</div>
+      </div>
+      <div class="card"><h3>Check-in history</h3><table class="week" id="checkinTable"></table></div>
+    </section>
+
+    <section class="panel" id="panel-prep">
+      <div class="card"><h3>Sunday batch-prep</h3><div id="prepList"></div>
+        <button class="ghost" id="resetPrep" style="margin-top:12px">Reset for next Sunday</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-settings">
+      <div class="card">
+        <h3>Targets</h3>
+        <div class="settings-row"><span>Daily kcal</span><input type="number" id="setKcal" value="2700"></div>
+        <div class="settings-row"><span>Protein (g)</span><input type="number" id="setPro" value="148"></div>
+        <div class="settings-row"><span>Carbs (g)</span><input type="number" id="setCarbs" value="300"></div>
+        <div class="settings-row"><span>Fat (g)</span><input type="number" id="setFat" value="75"></div>
+        <div class="settings-row"><span>Water (ml)</span><input type="number" id="setWater" value="3500"></div>
+      </div>
+      <div class="card">
+        <h3>Exercises by day</h3>
+        <div id="exSettings"></div>
+        <div class="note">One exercise per line. Populates the Lift checklist for that day type. Use the "Add an exercise" box on Today for one-off additions.</div>
+      </div>
+      <div class="card">
+        <h3>Theme</h3>
+        <div class="settings-row"><span>Appearance</span>
+          <select id="setTheme"><option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <h3>GitHub sync</h3>
+        <div class="settings-row"><span>Owner / username</span><input type="text" id="ghOwner" placeholder="e.g. nishant123"></div>
+        <div class="settings-row"><span>Repo</span><input type="text" id="ghRepo" placeholder="e.g. training-log"></div>
+        <div class="settings-row"><span>Branch</span><input type="text" id="ghBranch" placeholder="main"></div>
+        <div class="settings-row"><span>File path</span><input type="text" id="ghPath" placeholder="data.json"></div>
+        <div class="settings-row"><span>Token (fine-grained PAT)</span><input type="password" id="ghToken" placeholder="github_pat_…"></div>
+        <button class="ghost" id="saveGh" style="margin-top:6px">Save connection</button>
+        <button class="ghost" id="syncNowBtn" style="margin-top:8px">Sync now</button>
+        <div class="note" id="ghStatus">Not connected — data is only stored in this browser.</div>
+        <div class="note">The token is stored only in this browser's local storage, never written into the repo. Create a fine-grained personal access token scoped to just this one repo with Contents: Read and write, and give it an expiry.</div>
+      </div>
+      <div class="card">
+        <h3>Local backup</h3>
+        <button class="ghost" id="exportData">Export as JSON</button>
+        <button class="ghost" id="wipeData" style="margin-top:8px;color:var(--warn);border-color:var(--warn)">Clear all local data</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORE_KEY = 'ppl_run_logbook_v2';
+  const GH_KEY = 'ppl_run_logbook_gh_v1'; // kept separate — never synced into state
+  const DAY_TYPES = ['rest','push','pull','leg','push','pull','leg'];
+  const PACE = { push:'normal pace', pull:'normal pace', leg:'easy / conversational pace', rest:'' };
+  const DEFAULT_EX = {
+    push: ['Bench press','Overhead press','Incline DB press','Triceps pushdown','Lateral raise'],
+    pull: ['Pull-ups','Barbell row','Lat pulldown','Face pull','Bicep curl'],
+    leg:  ['Squat','Romanian deadlift','Leg press','Leg curl','Calf raise','Plank']
+  };
+  const PREP_ITEMS = ['Boil eggs for the week','Pre-portion oats + dates into daily boxes','Roast chana/makhana batch','Prep buttermilk / sattu for the week','Check gym kit + shoes','Weekly check-in (see Check-in tab)'];
+  const DEFAULT_FOODDB = {
+    'Boiled egg': {unit:'1 egg', kcal:70, pro:6, carbs:0.6, fat:5, quick:true},
+    'Oats (dry bowl)': {unit:'~40g bowl', kcal:150, pro:5, carbs:27, fat:3},
+    'Date': {unit:'1 piece', kcal:20, pro:0.2, carbs:5, fat:0},
+    'Honey': {unit:'1 tsp', kcal:21, pro:0, carbs:5.8, fat:0},
+    'Black coffee': {unit:'1 cup', kcal:2, pro:0.3, carbs:0, fat:0},
+    'Rice, cooked': {unit:'1 cup', kcal:200, pro:4, carbs:45, fat:0.4},
+    'Dal, cooked': {unit:'1 bowl', kcal:150, pro:9, carbs:20, fat:4},
+    'Chapati/roti': {unit:'1 piece', kcal:85, pro:3, carbs:18, fat:0.4},
+    'Mixed veg sabzi': {unit:'1 bowl', kcal:100, pro:3, carbs:12, fat:5},
+    'Sambhar': {unit:'1 bowl', kcal:90, pro:4, carbs:12, fat:3},
+    'Paneer': {unit:'50g', kcal:130, pro:9, carbs:2, fat:9},
+    'Curd/dahi': {unit:'1 cup', kcal:120, pro:7, carbs:9, fat:6},
+    'Buttermilk/chaas': {unit:'1 glass', kcal:40, pro:2, carbs:5, fat:1},
+    'Sattu': {unit:'2 tbsp', kcal:110, pro:8, carbs:15, fat:2},
+    'Whey scoop': {unit:'1 scoop', kcal:120, pro:24, carbs:3, fat:2, quick:true},
+    'Roasted chana': {unit:'1 handful', kcal:105, pro:6, carbs:17, fat:2},
+    'Makhana, roasted': {unit:'1 cup', kcal:65, pro:2.5, carbs:13, fat:0.5},
+    'Banana': {unit:'1 medium', kcal:105, pro:1.3, carbs:27, fat:0.4, quick:true},
+    'Peanut butter': {unit:'1 tbsp', kcal:95, pro:4, carbs:3, fat:8, quick:true},
+    'Soy chunks (dry)': {unit:'30g', kcal:100, pro:17, carbs:8, fat:0.5},
+    'Milk, plain': {unit:'1 cup', kcal:150, pro:8, carbs:12, fat:8},
+    'Ghee': {unit:'1 tsp', kcal:45, pro:0, carbs:0, fat:5},
+    'Almonds': {unit:'5 pieces', kcal:35, pro:1.3, carbs:1.3, fat:3},
+  };
+
+  function todayStr(d=new Date()){ return d.toISOString().slice(0,10); }
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+
+  function defaultState(){
+    return { logs:{}, checkins:{}, prep:{}, weights:{},
+      settings:{ targets:{kcal:2700,pro:148,carbs:300,fat:75,water:3500}, theme:'auto', exercises:JSON.parse(JSON.stringify(DEFAULT_EX)), foodDB:JSON.parse(JSON.stringify(DEFAULT_FOODDB)) } };
+  }
+  function loadLocal(){
+    try { const raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch(e){}
+    return defaultState();
+  }
+  function saveLocal(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){ console.error(e); } }
+
+  function loadGh(){ try { const raw = localStorage.getItem(GH_KEY); if (raw) return JSON.parse(raw); } catch(e){} return { owner:'', repo:'', branch:'main', path:'data.json', token:'', sha:null, lastSynced:null }; }
+  function saveGhConfig(){ try { localStorage.setItem(GH_KEY, JSON.stringify(gh)); } catch(e){} }
+
+  let state = loadLocal();
+  if (!state.settings.targets) state.settings.targets = {kcal:2700,pro:148,carbs:300,fat:75,water:3500};
+  if (!state.settings.foodDB) state.settings.foodDB = JSON.parse(JSON.stringify(DEFAULT_FOODDB));
+  let gh = loadGh();
+
+  const today = new Date();
+  const key = todayStr(today);
+  const dayIdx = today.getDay();
+  const dayType = DAY_TYPES[dayIdx];
+  if (!state.logs[key]) state.logs[key] = { dayType, run:{done:false, dist: dayType==='rest'?0:5, time:null}, lift:{ex:{}, extra:[]}, foodLog:[], water:0 };
+  const log = state.logs[key];
+  if (!log.lift.extra) log.lift.extra = [];
+  if (!log.foodLog) log.foodLog = [];
+
+  // ---------- GitHub sync ----------
+  let syncTimer = null;
+  function ghReady(){ return gh.owner && gh.repo && gh.token; }
+  function b64EncodeUnicode(str){ return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_,p)=>String.fromCharCode('0x'+p))); }
+  function b64DecodeUnicode(str){ return decodeURIComponent(atob(str.replace(/\n/g,'')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')); }
+  function ghUrl(){ return `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}?ref=${encodeURIComponent(gh.branch||'main')}`; }
+  function setSyncStatus(mode, msg){
+    const dot = document.getElementById('syncDot');
+    dot.className = 'syncdot ' + mode;
+    if (msg) document.getElementById('ghStatus').textContent = msg;
+  }
+  async function ghPull(){
+    if (!ghReady()) { setSyncStatus('', 'Not connected — data is only stored in this browser.'); return null; }
+    setSyncStatus('syncing');
+    try {
+      const res = await fetch(ghUrl(), { headers:{ Authorization:`Bearer ${gh.token}`, Accept:'application/vnd.github+json' } });
+      if (res.status === 404) { setSyncStatus('synced', 'Connected. No data.json yet — will create it on first sync.'); return {notFound:true}; }
+      if (!res.ok) { const j = await res.json().catch(()=>({})); setSyncStatus('error', 'Pull failed: ' + (j.message||res.status)); return null; }
+      const j = await res.json();
+      gh.sha = j.sha; saveGhConfig();
+      const decoded = b64DecodeUnicode(j.content);
+      return JSON.parse(decoded);
+    } catch(e){ setSyncStatus('error', 'Network error while pulling.'); return null; }
+  }
+  async function ghPush(){
+    if (!ghReady()) return;
+    setSyncStatus('syncing');
+    try {
+      const content = b64EncodeUnicode(JSON.stringify(state, null, 2));
+      const body = { message:`sync ${new Date().toISOString()}`, content, branch: gh.branch||'main' };
+      if (gh.sha) body.sha = gh.sha;
+      let res = await fetch(ghUrl().split('?')[0], { method:'PUT', headers:{ Authorization:`Bearer ${gh.token}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+      if (res.status === 409) {
+        // remote moved on — refetch sha and retry once
+        const remote = await ghPull();
+        body.sha = gh.sha;
+        res = await fetch(ghUrl().split('?')[0], { method:'PUT', headers:{ Authorization:`Bearer ${gh.token}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+      }
+      if (!res.ok) { const j = await res.json().catch(()=>({})); setSyncStatus('error', 'Push failed: ' + (j.message||res.status)); return; }
+      const j = await res.json();
+      gh.sha = j.content.sha; gh.lastSynced = new Date().toISOString(); saveGhConfig();
+      setSyncStatus('synced', 'Last synced ' + new Date(gh.lastSynced).toLocaleTimeString());
+    } catch(e){ setSyncStatus('error', 'Network error while pushing.'); }
+  }
+  function scheduleSync(){
+    saveLocal();
+    if (!ghReady()) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(ghPush, 1500);
+  }
+  async function initialSync(){
+    if (!ghReady()) { setSyncStatus('', 'Not connected — data is only stored in this browser.'); return; }
+    const remote = await ghPull();
+    if (remote && !remote.notFound) {
+      // Remote is source of truth across devices; merge today's in-progress local log on top so nothing typed just now is lost.
+      const localToday = state.logs[key];
+      state = remote;
+      if (!state.settings) state.settings = defaultState().settings;
+      if (!state.logs) state.logs = {};
+      if (localToday && !state.logs[key]) state.logs[key] = localToday;
+      saveLocal();
+      renderAll();
+      setSyncStatus('synced', 'Synced with GitHub. Last pulled ' + new Date().toLocaleTimeString());
+    } else if (remote && remote.notFound) {
+      ghPush();
+    }
+  }
+
+  // ---------- theme ----------
+  function applyTheme(){ const t = state.settings.theme||'auto'; if (t==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
+  applyTheme();
+
+  // ---------- header ----------
+  document.getElementById('dateStr').textContent = today.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+  const dayLabelMap = { push:'Push day', pull:'Pull day', leg:'Leg day', rest:'Rest day' };
+  document.getElementById('dayTypeLabel').textContent = dayLabelMap[dayType];
+  document.getElementById('dayTypeTag').textContent = dayType==='rest' ? '' : (PACE[dayType] + (dayType==='leg' ? ' · injury-risk day, sleep first' : ''));
+
+  function computeStreak(){
+    let n = 0;
+    for (let i=0;i<400;i++){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const k = todayStr(d); const dt = DAY_TYPES[d.getDay()]; const l = state.logs[k];
+      if (dt === 'rest') { if (i===0) continue; else continue; }
+      if (l && l.run && l.run.done && l.lift && l.lift.ex && Object.values(l.lift.ex).length && Object.values(l.lift.ex).every(r=>r.done)) n++;
+      else if (i===0) continue;
+      else break;
+    }
+    return n;
+  }
+
+  function renderAll(){
+    document.getElementById('streakNum').textContent = computeStreak();
+    renderExerciseList(); renderExtraEx(); renderFoodSelect(); renderQuickChips(); renderFoodLog(); renderMacros(); renderWater();
+    renderExSettings(); syncSettingsFields();
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active'); document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab==='week') renderWeek();
+      if (btn.dataset.tab==='checkin') renderCheckin();
+    });
+  });
+
+  if (dayType === 'rest') {
+    document.getElementById('restNotice').style.display = 'flex';
+    document.getElementById('runCard').style.display = 'none';
+    document.getElementById('liftCard').style.display = 'none';
+  } else {
+    document.getElementById('runPaceNote').textContent = '· ' + PACE[dayType];
+    document.getElementById('liftSub').textContent = '· ' + dayType + ' day';
+  }
+
+  // ---------- run ----------
+  const runDone = document.getElementById('runDone'), runDist = document.getElementById('runDist'), runTime = document.getElementById('runTime');
+  runDone.checked = !!log.run.done; runDist.value = log.run.dist ?? 5; runTime.value = log.run.time ?? '';
+  [runDone, runDist, runTime].forEach(el=>el.addEventListener('input', ()=>{
+    log.run.done = runDone.checked; log.run.dist = parseFloat(runDist.value)||0; log.run.time = runTime.value ? parseFloat(runTime.value) : null;
+    scheduleSync();
+  }));
+
+  // ---------- lift: preset exercises ----------
+  function renderExerciseList(){
+    const list = document.getElementById('exerciseList'); list.innerHTML = '';
+    if (dayType === 'rest') return;
+    const exs = state.settings.exercises[dayType] || [];
+    exs.forEach(name=>{
+      if (!log.lift.ex[name]) log.lift.ex[name] = { done:false, sets:'', reps:'', weight:'' };
+      const rec = log.lift.ex[name];
+      const row = document.createElement('div'); row.className = 'exrow';
+      row.innerHTML = `<div class="name"><label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" ${rec.done?'checked':''} data-ex="${name}" data-f="done"> ${name}</label></div>
+        <div class="fields"><input type="number" placeholder="sets" value="${rec.sets}" data-ex="${name}" data-f="sets" style="width:44px"><span>×</span>
+        <input type="number" placeholder="reps" value="${rec.reps}" data-ex="${name}" data-f="reps" style="width:44px"><span>@</span>
+        <input type="number" placeholder="kg" value="${rec.weight}" data-ex="${name}" data-f="weight" style="width:48px"></div>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const name = inp.dataset.ex, f = inp.dataset.f;
+        if (f==='done') log.lift.ex[name].done = inp.checked; else log.lift.ex[name][f] = inp.value;
+        scheduleSync();
+      });
+    });
+  }
+
+  // ---------- lift: one-off exercises ----------
+  function renderExtraEx(){
+    const list = document.getElementById('extraExList'); list.innerHTML = '';
+    log.lift.extra.forEach((rec, idx)=>{
+      const row = document.createElement('div'); row.className = 'exrow';
+      row.innerHTML = `<div class="name"><label style="display:flex;gap:8px;align-items:center;flex:1"><input type="checkbox" ${rec.done?'checked':''} data-i="${idx}" data-f="done"> ${rec.name}</label><button class="rmbtn" data-rm="${idx}">✕</button></div>
+        <div class="fields"><input type="number" placeholder="sets" value="${rec.sets}" data-i="${idx}" data-f="sets" style="width:44px"><span>×</span>
+        <input type="number" placeholder="reps" value="${rec.reps}" data-i="${idx}" data-f="reps" style="width:44px"><span>@</span>
+        <input type="number" placeholder="kg" value="${rec.weight}" data-i="${idx}" data-f="weight" style="width:48px"></div>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const i = +inp.dataset.i, f = inp.dataset.f;
+        if (f==='done') log.lift.extra[i].done = inp.checked; else log.lift.extra[i][f] = inp.value;
+        scheduleSync();
+      });
+    });
+    list.querySelectorAll('[data-rm]').forEach(btn=>btn.addEventListener('click', ()=>{ log.lift.extra.splice(+btn.dataset.rm,1); renderExtraEx(); scheduleSync(); }));
+  }
+  document.getElementById('addExBtn').addEventListener('click', ()=>{
+    const inp = document.getElementById('newExName'); const name = inp.value.trim();
+    if (!name) return;
+    log.lift.extra.push({ name, done:false, sets:'', reps:'', weight:'' });
+    inp.value=''; renderExtraEx(); scheduleSync();
+  });
+
+  // ---------- food log ----------
+  function renderFoodSelect(){
+    const sel = document.getElementById('foodSelect'); sel.innerHTML = '';
+    Object.keys(state.settings.foodDB).sort().forEach(name=>{
+      const f = state.settings.foodDB[name];
+      const opt = document.createElement('option'); opt.value = name; opt.textContent = `${name} (${f.unit})`;
+      sel.appendChild(opt);
+    });
+  }
+  function renderQuickChips(){
+    const wrap = document.getElementById('quickChips'); wrap.innerHTML = '';
+    Object.entries(state.settings.foodDB).filter(([,f])=>f.quick).forEach(([name,f])=>{
+      const b = document.createElement('button'); b.className = 'chip'; b.textContent = '+ ' + name;
+      b.addEventListener('click', ()=>{ addFoodEntry(document.getElementById('foodSlot').value, name, 1); });
+      wrap.appendChild(b);
+    });
+  }
+  function addFoodEntry(slot, name, qty){
+    const f = state.settings.foodDB[name]; if (!f) return;
+    log.foodLog.push({ id:uid(), slot, name, unit:f.unit, qty, kcal:round1(f.kcal*qty), pro:round1(f.pro*qty), carbs:round1(f.carbs*qty), fat:round1(f.fat*qty) });
+    renderFoodLog(); renderMacros(); scheduleSync();
+  }
+  function round1(n){ return Math.round(n*10)/10; }
+  document.getElementById('addFoodBtn').addEventListener('click', ()=>{
+    const slot = document.getElementById('foodSlot').value;
+    const name = document.getElementById('foodSelect').value;
+    const qty = parseFloat(document.getElementById('foodQty').value) || 1;
+    addFoodEntry(slot, name, qty);
+  });
+  document.getElementById('toggleCustomFood').addEventListener('click', ()=>{ document.getElementById('customFoodForm').classList.toggle('open'); });
+  document.getElementById('saveCustomFood').addEventListener('click', ()=>{
+    const name = document.getElementById('cfName').value.trim(); if (!name) return;
+    state.settings.foodDB[name] = { unit: document.getElementById('cfUnit').value.trim()||'1 unit',
+      kcal: +document.getElementById('cfKcal').value||0, pro: +document.getElementById('cfPro').value||0,
+      carbs: +document.getElementById('cfCarbs').value||0, fat: +document.getElementById('cfFat').value||0 };
+    ['cfName','cfUnit','cfKcal','cfPro','cfCarbs','cfFat'].forEach(id=>document.getElementById(id).value='');
+    renderFoodSelect(); renderQuickChips(); document.getElementById('customFoodForm').classList.remove('open'); scheduleSync();
+  });
+  const SLOT_LABEL = { pre:'Pre-workout', post:'Post-workout', lunch:'Lunch', snack:'Snack', dinner:'Dinner', other:'Other' };
+  function renderFoodLog(){
+    const wrap = document.getElementById('foodLogList'); wrap.innerHTML = '';
+    if (!log.foodLog.length) { wrap.innerHTML = '<div class="note">Nothing logged yet today.</div>'; return; }
+    const bySlot = {};
+    log.foodLog.forEach(e=>{ (bySlot[e.slot] = bySlot[e.slot]||[]).push(e); });
+    Object.keys(SLOT_LABEL).forEach(slot=>{
+      if (!bySlot[slot]) return;
+      const h = document.createElement('div'); h.className = 'slot-label'; h.textContent = SLOT_LABEL[slot]; wrap.appendChild(h);
+      bySlot[slot].forEach(e=>{
+        const row = document.createElement('div'); row.className = 'foodline';
+        row.innerHTML = `<span>${e.qty} × ${e.name}</span><span class="meta">${e.kcal} kcal · ${e.pro}p · ${e.carbs}c · ${e.fat}f <button class="rmbtn" data-rm="${e.id}">✕</button></span>`;
+        wrap.appendChild(row);
+      });
+    });
+    wrap.querySelectorAll('[data-rm]').forEach(btn=>btn.addEventListener('click', ()=>{
+      log.foodLog = log.foodLog.filter(e=>e.id!==btn.dataset.rm); renderFoodLog(); renderMacros(); scheduleSync();
+    }));
+  }
+  function renderMacros(){
+    let kcal=0,pro=0,carbs=0,fat=0;
+    log.foodLog.forEach(e=>{ kcal+=e.kcal; pro+=e.pro; carbs+=e.carbs; fat+=e.fat; });
+    document.getElementById('kcalVal').textContent = Math.round(kcal);
+    document.getElementById('proVal').textContent = Math.round(pro);
+    document.getElementById('carbVal').textContent = Math.round(carbs);
+    document.getElementById('fatVal').textContent = Math.round(fat);
+    const t = state.settings.targets;
+    document.getElementById('kcalTarget').textContent = ' ' + t.kcal;
+    document.getElementById('proTarget').textContent = ' ' + t.pro;
+    document.getElementById('carbTarget').textContent = ' ' + t.carbs;
+    document.getElementById('fatTarget').textContent = ' ' + t.fat;
+    document.getElementById('kcalBar').style.width = Math.min(100, kcal/t.kcal*100) + '%';
+  }
+
+  // ---------- water ----------
+  function renderWater(){
+    const t = state.settings.targets;
+    document.getElementById('waterVal').textContent = `${log.water||0} / ${t.water} ml`;
+    document.getElementById('waterBar').style.width = Math.min(100, (log.water||0)/t.water*100) + '%';
+  }
+  document.querySelectorAll('[data-w]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if (btn.dataset.w === 'reset') log.water = 0; else log.water = (log.water||0) + parseInt(btn.dataset.w);
+      renderWater(); scheduleSync();
+    });
+  });
+
+  // ---------- week ----------
+  function renderWeek(){
+    const tbl = document.getElementById('weekTable');
+    let rows = `<tr><th>Day</th><th>Run</th><th>Lift</th><th>kcal</th><th>Pro</th><th>Carb</th><th>Fat</th></tr>`;
+    for (let i=6;i>=0;i--){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const k = todayStr(d); const l = state.logs[k]; const dt = DAY_TYPES[d.getDay()];
+      const label = d.toLocaleDateString('en-IN', { weekday:'short' });
+      if (dt==='rest') { rows += `<tr><td>${label}</td><td colspan="5" style="color:var(--rest)">rest</td><td></td></tr>`; continue; }
+      let kcal=0,pro=0,carbs=0,fat=0;
+      if (l && l.foodLog) l.foodLog.forEach(e=>{ kcal+=e.kcal; pro+=e.pro; carbs+=e.carbs; fat+=e.fat; });
+      const liftOk = l && l.lift && l.lift.ex && Object.values(l.lift.ex).length && Object.values(l.lift.ex).every(r=>r.done);
+      rows += `<tr><td>${label}</td>
+        <td><span class="dot-b ${l&&l.run&&l.run.done?'on':'off'}"></span></td>
+        <td><span class="dot-b ${liftOk?'on':'off'}"></span></td>
+        <td class="mono">${kcal?Math.round(kcal):'—'}</td><td class="mono">${pro?Math.round(pro):'—'}</td>
+        <td class="mono">${carbs?Math.round(carbs):'—'}</td><td class="mono">${fat?Math.round(fat):'—'}</td></tr>`;
+    }
+    tbl.innerHTML = rows;
+    const bw = document.getElementById('bwInput'); bw.value = state.weights[key] ?? '';
+    bw.oninput = ()=>{ state.weights[key] = parseFloat(bw.value)||null; scheduleSync(); renderTrend(); };
+    renderTrend();
+  }
+  function renderTrend(){
+    const entries = Object.entries(state.weights).filter(([,v])=>v).sort();
+    const el = document.getElementById('bwTrend');
+    if (entries.length < 2) { el.textContent = 'Log a few entries to see the trend.'; return; }
+    const first = entries[Math.max(0, entries.length-14)][1]; const last = entries[entries.length-1][1];
+    const diff = (last-first).toFixed(1);
+    el.textContent = `${diff>=0?'+':''}${diff} kg over last ${Math.min(14,entries.length)} logged entries. Recomp goal — small drift either way is fine if lifts and run pace are holding.`;
+  }
+
+  // ---------- check-in ----------
+  const jointPain = document.getElementById('jointPain'), sleepQ = document.getElementById('sleepQ'), appetite = document.getElementById('appetite'), rhrInput = document.getElementById('rhrInput');
+  [[jointPain,'jpVal'],[sleepQ,'sleepVal'],[appetite,'appVal']].forEach(([el,id])=>el.addEventListener('input', ()=>{ document.getElementById(id).textContent = el.value; }));
+  document.getElementById('saveCheckin').addEventListener('click', ()=>{
+    state.checkins[key] = { jointPain:+jointPain.value, sleep:+sleepQ.value, appetite:+appetite.value, rhr: rhrInput.value?+rhrInput.value:null, date:key };
+    scheduleSync(); renderCheckin();
+  });
+  function renderCheckin(){
+    const entries = Object.entries(state.checkins).sort().reverse();
+    const tbl = document.getElementById('checkinTable');
+    let rows = `<tr><th>Date</th><th>Pain</th><th>RHR</th><th>Sleep</th><th>Appetite</th></tr>`;
+    entries.slice(0,8).forEach(([k,c])=>{ rows += `<tr><td>${k.slice(5)}</td><td class="mono">${c.jointPain}</td><td class="mono">${c.rhr??'—'}</td><td class="mono">${c.sleep}</td><td class="mono">${c.appetite}</td></tr>`; });
+    tbl.innerHTML = rows;
+    const flagBox = document.getElementById('checkinFlag');
+    if (entries.length >= 2) {
+      const [c1,c2] = [entries[0][1], entries[1][1]];
+      const painUp = c1.jointPain>=6 && c2.jointPain>=6, sleepDown = c1.sleep<=2 && c2.sleep<=2, appDown = c1.appetite<=2 && c2.appetite<=2;
+      flagBox.innerHTML = (painUp||sleepDown||appDown) ? `<div class="flag"><div class="dot"></div><div>Two weeks running of ${painUp?'elevated joint pain':sleepDown?'poor sleep':'low appetite'}. Per your own rule: drop a run to a walk this week, keep lifting as-is.</div></div>` : '';
+    } else flagBox.innerHTML = '';
+  }
+  if (dayIdx === 0) renderCheckin();
+
+  // ---------- prep ----------
+  function renderPrep(){
+    const list = document.getElementById('prepList'); list.innerHTML = '';
+    PREP_ITEMS.forEach((item,i)=>{
+      const done = !!state.prep[item];
+      const row = document.createElement('div'); row.className = 'prep-item' + (done?' done':'');
+      row.innerHTML = `<input type="checkbox" ${done?'checked':''} data-item="${item}" id="prep${i}"><label for="prep${i}">${item}</label>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('input').forEach(inp=>inp.addEventListener('change', ()=>{
+      state.prep[inp.dataset.item] = inp.checked; inp.closest('.prep-item').classList.toggle('done', inp.checked); scheduleSync();
+    }));
+  }
+  document.getElementById('resetPrep').addEventListener('click', ()=>{ state.prep = {}; renderPrep(); scheduleSync(); });
+
+  // ---------- settings ----------
+  function syncSettingsFields(){
+    const t = state.settings.targets;
+    document.getElementById('setKcal').value = t.kcal; document.getElementById('setPro').value = t.pro;
+    document.getElementById('setCarbs').value = t.carbs; document.getElementById('setFat').value = t.fat; document.getElementById('setWater').value = t.water;
+    document.getElementById('setTheme').value = state.settings.theme;
+    document.getElementById('ghOwner').value = gh.owner||''; document.getElementById('ghRepo').value = gh.repo||'';
+    document.getElementById('ghBranch').value = gh.branch||'main'; document.getElementById('ghPath').value = gh.path||'data.json';
+    document.getElementById('ghToken').value = gh.token||'';
+  }
+  ['setKcal','setPro','setCarbs','setFat','setWater'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', e=>{
+      const map = { setKcal:'kcal', setPro:'pro', setCarbs:'carbs', setFat:'fat', setWater:'water' };
+      state.settings.targets[map[id]] = parseFloat(e.target.value)||0; renderMacros(); renderWater(); scheduleSync();
+    });
+  });
+  document.getElementById('setTheme').addEventListener('change', e=>{ state.settings.theme = e.target.value; applyTheme(); scheduleSync(); });
+
+  function renderExSettings(){
+    const wrap = document.getElementById('exSettings'); wrap.innerHTML = '';
+    ['push','pull','leg'].forEach(dt=>{
+      const box = document.createElement('div'); box.style.marginBottom = '12px';
+      box.innerHTML = `<div style="font-size:13px;font-weight:600;margin-bottom:6px;text-transform:capitalize">${dt} day</div>
+        <textarea data-dt="${dt}" rows="${(state.settings.exercises[dt]||[]).length+1}" style="width:100%;font-family:'IBM Plex Mono';font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:8px">${(state.settings.exercises[dt]||[]).join('\n')}</textarea>`;
+      wrap.appendChild(box);
+    });
+    wrap.querySelectorAll('textarea').forEach(ta=>ta.addEventListener('change', ()=>{
+      state.settings.exercises[ta.dataset.dt] = ta.value.split('\n').map(s=>s.trim()).filter(Boolean);
+      if (ta.dataset.dt === dayType) renderExerciseList();
+      scheduleSync();
+    }));
+  }
+
+  document.getElementById('saveGh').addEventListener('click', ()=>{
+    gh.owner = document.getElementById('ghOwner').value.trim();
+    gh.repo = document.getElementById('ghRepo').value.trim();
+    gh.branch = document.getElementById('ghBranch').value.trim() || 'main';
+    gh.path = document.getElementById('ghPath').value.trim() || 'data.json';
+    gh.token = document.getElementById('ghToken').value.trim();
+    saveGhConfig();
+    initialSync();
+  });
+  document.getElementById('syncNowBtn').addEventListener('click', ghPush);
+
+  document.getElementById('exportData').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `logbook-export-${key}.json`; a.click();
+  });
+  document.getElementById('wipeData').addEventListener('click', ()=>{
+    if (confirm('Clear all local data? This does not delete anything already synced to GitHub.')) { localStorage.removeItem(STORE_KEY); location.reload(); }
+  });
+
+  renderAll();
+  initialSync();
+})();
+</script>
+</body>
+</html>
