@@ -143,6 +143,17 @@
           "pro": 6,
           "carbs": 0.6,
           "fat": 5
+        },
+        {
+          "id": "6bxdesb",
+          "slot": "post",
+          "name": "Milk, plain",
+          "unit": "1 cup",
+          "qty": 1,
+          "kcal": 150,
+          "pro": 8,
+          "carbs": 12,
+          "fat": 8
         }
       ],
       "water": 0
