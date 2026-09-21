@@ -77,6 +77,17 @@
           "pro": 12.5,
           "carbs": 67.5,
           "fat": 7.5
+        },
+        {
+          "id": "gebp5b1",
+          "slot": "pre",
+          "name": "Honey",
+          "unit": "1 tsp",
+          "qty": 1,
+          "kcal": 21,
+          "pro": 0,
+          "carbs": 5.8,
+          "fat": 0
         }
       ],
       "water": 0
