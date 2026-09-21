@@ -10,7 +10,7 @@
       "lift": {
         "ex": {
           "Bench press": {
-            "done": false,
+            "done": true,
             "sets": "",
             "reps": "",
             "weight": ""
