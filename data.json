@@ -40,8 +40,8 @@
             "weight": ""
           },
           "Inclined Dumbell Press": {
-            "done": false,
-            "sets": "",
+            "done": true,
+            "sets": "3",
             "reps": "",
             "weight": ""
           },
