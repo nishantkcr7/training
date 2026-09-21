@@ -38,6 +38,30 @@
             "sets": "",
             "reps": "",
             "weight": ""
+          },
+          "Inclined Dumbell Press": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Dips": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Shoulder Press": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Triceps overhead": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
           }
         },
         "extra": []
@@ -60,11 +84,12 @@
     "theme": "auto",
     "exercises": {
       "push": [
-        "Bench press",
-        "Overhead press",
-        "Incline DB press",
+        "Inclined Dumbell Press",
+        "Dips",
+        "Shoulder Press",
+        "Lateral raise",
         "Triceps pushdown",
-        "Lateral raise"
+        "Triceps overhead"
       ],
       "pull": [
         "Pull-ups",
