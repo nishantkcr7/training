@@ -34,8 +34,8 @@
             "weight": ""
           },
           "Lateral raise": {
-            "done": false,
-            "sets": "",
+            "done": true,
+            "sets": "3",
             "reps": "",
             "weight": ""
           },
