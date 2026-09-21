@@ -28,9 +28,9 @@
             "weight": ""
           },
           "Triceps pushdown": {
-            "done": false,
-            "sets": "",
-            "reps": "",
+            "done": true,
+            "sets": "3",
+            "reps": "15",
             "weight": ""
           },
           "Lateral raise": {
