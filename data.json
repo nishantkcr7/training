@@ -42,8 +42,8 @@
           "Inclined Dumbell Press": {
             "done": true,
             "sets": "3",
-            "reps": "",
-            "weight": ""
+            "reps": "15",
+            "weight": "15"
           },
           "Dips": {
             "done": false,
