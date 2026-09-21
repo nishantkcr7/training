@@ -154,6 +154,17 @@
           "pro": 8,
           "carbs": 12,
           "fat": 8
+        },
+        {
+          "id": "697o03k",
+          "slot": "post",
+          "name": "Sattu",
+          "unit": "2 tbsp",
+          "qty": 1,
+          "kcal": 110,
+          "pro": 8,
+          "carbs": 15,
+          "fat": 2
         }
       ],
       "water": 0
