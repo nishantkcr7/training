@@ -12,8 +12,8 @@
           "Bench press": {
             "done": true,
             "sets": "3",
-            "reps": "",
-            "weight": ""
+            "reps": "12",
+            "weight": "-1"
           },
           "Overhead press": {
             "done": false,
