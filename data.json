@@ -233,6 +233,17 @@
           "pro": 0.2,
           "carbs": 5,
           "fat": 0
+        },
+        {
+          "id": "op0jn18",
+          "slot": "pre",
+          "name": "Oats (dry bowl)",
+          "unit": "~40g bowl",
+          "qty": 3,
+          "kcal": 450,
+          "pro": 15,
+          "carbs": 81,
+          "fat": 9
         }
       ],
       "water": 0
