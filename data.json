@@ -190,7 +190,7 @@
       "lift": {
         "ex": {
           "Pull-ups": {
-            "done": false,
+            "done": true,
             "sets": "",
             "reps": "",
             "weight": ""
