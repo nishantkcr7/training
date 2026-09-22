@@ -222,7 +222,19 @@
         },
         "extra": []
       },
-      "foodLog": [],
+      "foodLog": [
+        {
+          "id": "9u4d1ps",
+          "slot": "pre",
+          "name": "Date",
+          "unit": "1 piece",
+          "qty": 1,
+          "kcal": 20,
+          "pro": 0.2,
+          "carbs": 5,
+          "fat": 0
+        }
+      ],
       "water": 0
     }
   },
