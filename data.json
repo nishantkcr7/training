@@ -179,6 +179,51 @@
         }
       ],
       "water": 750
+    },
+    "2026-09-22": {
+      "dayType": "pull",
+      "run": {
+        "done": false,
+        "dist": 5,
+        "time": 34
+      },
+      "lift": {
+        "ex": {
+          "Pull-ups": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Barbell row": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Lat pulldown": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Face pull": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          },
+          "Bicep curl": {
+            "done": false,
+            "sets": "",
+            "reps": "",
+            "weight": ""
+          }
+        },
+        "extra": []
+      },
+      "foodLog": [],
+      "water": 0
     }
   },
   "checkins": {},
